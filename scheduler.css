@@ -1,0 +1,68 @@
+.wrapper{
+    margin: 20px;
+    box-sizing: border-box;
+}
+*{
+    box-sizing: border-box;
+}
+.scheduler-wrapper{
+    border: 1px solid grey;
+    height: 700px;
+    width: 700px;
+    overflow-y: scroll;
+    position: relative;
+}
+.scheduler-scroll-pen{
+    height: 1200px;
+    position: relative;
+}
+.scheduler-scales-vertical,.scheduler-scales-horizontal{
+    position: absolute;
+    display: flex;
+    top:0;
+    bottom:0;
+    right:0;
+    left:0;
+    opacity: 0.3;
+}
+.scheduler-scales-vertical{
+    flex-direction: column;
+}
+.scheduler-scale-horizontal{
+    flex: 1;
+    border-left:1px solid cornflowerblue;
+}
+.scheduler-scale-horizontal:first-child{
+    border-left:none;
+}
+.scheduler-scale-vertical{
+    flex: 1;
+    border-top:1px solid cornflowerblue;
+}
+.scheduler-scale-vertical:first-child{
+    border-top:none;
+}
+.scheduler-controls{
+    position: absolute;
+    top:0;
+    bottom:0;
+    right:0;
+    left:0;
+    z-index: 10;
+}
+.scheduler-events{
+    position: absolute;
+    background: lightgreen;
+    opacity: 0.5;
+    transition: 0.2s;
+    z-index: 12;
+}
+.scheduler-dragableBottom{
+    position: absolute;
+    height: 8px;
+    z-index: 13;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    cursor: ns-resize;
+}
