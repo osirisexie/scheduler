@@ -160,7 +160,9 @@
           let event = arguments[0], o_cords = arguments[2];
           return e=>{
               let cords = this.mouse_event.call(event,e);
-              event.re_render(event.el.data('s-data').cords[0] + cords.x - o_cords.x,event.el.data('s-data').cords[1] + cords.y - o_cords.y,event.el.data('s-data').cords[2],event.el.data('s-data').cords[3])
+              let rect = [event.el.data('s-data').cords[0] + cords.x - o_cords.x,event.el.data('s-data').cords[1] + cords.y - o_cords.y,event.el.data('s-data').cords[2],event.el.data('s-data').cords[3]]
+              event.change_text(...rect);
+              event.re_render(...rect)
           }
       },
 
@@ -170,6 +172,8 @@
           let data = event.data();
           data.cords = [event.el.data('s-data').cords[0] + cords.x - o_cords.x,event.el.data('s-data').cords[1] + cords.y - o_cords.y,event.el.data('s-data').cords[2],event.el.data('s-data').cords[3]]
           event.data(data);
+          event.re_render(...data.cords,true)
+
 
       },
 
@@ -178,24 +182,24 @@
           let o_cords;
           if(arguments.length >= 3) o_cords = arguments[2];
           return e=>{
+              this.stop_further(e)
               this.resize = true;
               let rect = calc_event_rect.call(event,e,o_cords);
               let data = event.data();
               data.cords = rect;
               event.data(data);
-              event.re_render(...rect);
+              event.re_render(...rect,true);
           }
       },
 
       mouse_move_resize_stop: function(e){
           if(this.resize){
-              let e = arguments[0], event = arguments[1], o_cords;
-              if(arguments.length >= 4) o_cords = arguments[3];
-              let rect = calc_event_rect.call(event,e,o_cords);
-              let data = event.data();
-              data.cords = rect;
-              event.data(data);
-
+              // let e = arguments[0], event = arguments[1], o_cords;
+              // if(arguments.length >= 4) o_cords = arguments[3];
+              // let rect = calc_event_rect.call(event,e,o_cords);
+              // let data = event.data();
+              // data.cords = rect;
+              // event.data(data);
           }
           this.resize = false;
 
@@ -268,6 +272,7 @@
       this.data(data);
     }
 
+
     destory(){
       this.parent.remove_event(this);
     }
@@ -276,7 +281,7 @@
       this.parent.copy_event(this);
     }
 
-    re_render(x,y,w,h){
+    re_render(x,y,w,h,bool){
       this.el.css({
         top:`${y * this.config.m_h}px`,
         left:`${x * this.config.m_w}px`,
@@ -284,7 +289,15 @@
         height:`${h * this.config.m_h}px`,
       });
       this.parse_data();
-      this.el.find('.xqmScheduler-text').html(`${this.start} to ${this.end}`);
+      if(bool) this.el.find('.xqmScheduler-text').html(`${this.start} to ${this.end}`);
+    }
+
+
+    change_text(a,b,c,d){
+        let start = b*30,end = start + d*30;
+        start = to_time_string(start);
+        end = to_time_string(end);
+        this.el.find('.xqmScheduler-text').html(`${start} to ${end}`);
     }
 
     data(data){
