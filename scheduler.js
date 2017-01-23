@@ -57,10 +57,15 @@
   let event_builder ={
 
       build: function(){
+          event_builder.build_main.call(this);
           event_builder.add_resizer.call(this,'top');
           event_builder.add_resizer.call(this,'bottom');
           event_builder.add_remover.call(this);
           event_builder.add_copier.call(this);
+      },
+
+      build_main:function(){
+          this.el = $('<div class="xqmScheduler-event"><div class="xqmScheduler-text"></div></div>');
       },
 
       add_resizer : function(position){
@@ -146,7 +151,7 @@
           return e=>{
               this.stop_further(e);
               let cords = this.mouse_event.call(event,e);
-              event_listerner_handler.startListen.call(event,'reposition',cords);
+              event_listener_handler.startListen.call(event,'reposition',cords);
           }
 
       },
@@ -175,6 +180,9 @@
           return e=>{
               this.resize = true;
               let rect = calc_event_rect.call(event,e,o_cords);
+              let data = event.data();
+              data.cords = rect;
+              event.data(data);
               event.re_render(...rect);
           }
       },
@@ -187,6 +195,7 @@
               let data = event.data();
               data.cords = rect;
               event.data(data);
+
           }
           this.resize = false;
 
@@ -202,7 +211,7 @@
               if(position == 'top'){
                   cords.y = event.data().cords[1]+event.data().cords[3]
               }
-              event_listerner_handler.startListen.call(event,'resize',cords);
+              event_listener_handler.startListen.call(event,'resize',cords);
           }
       }
 
@@ -217,13 +226,13 @@
                   type:'cords',
                   cords: this.mouse_event.call(scheduler,e),
               });
-              event_listerner_handler.startListen.call(event,'resize')
+              event_listener_handler.startListen.call(event,'resize')
           }
 
       }
   })
 
-  let event_listerner_handler = {
+  let event_listener_handler = {
       startListen:function(name){
           let mouse_wrapper = this.el.closest('.xqmScheduler-wrapper').find(`.${mouse_wrapper_id}`);
           mouse_wrapper.on('mousemove',event_mouse_event_handler[`mouse_move_${name}`](this,...arguments))
@@ -246,9 +255,8 @@
         let data = {
           cords:[options.cords.x, options.cords.y, 1, options.cords.h?options.cords.h:2],
         };
-        this.el = $('<div class="xqmScheduler-event"/>');
-        this.data(data);
         event_builder.build.call(this);
+        this.data(data);
         this.re_render(...data.cords);
         this.el.on('mousedown', event_mouse_event_handler.start_move(this));
       }
@@ -276,6 +284,7 @@
         height:`${h * this.config.m_h}px`,
       });
       this.parse_data();
+      this.el.find('.xqmScheduler-text').html(`${this.start} to ${this.end}`);
     }
 
     data(data){
@@ -295,7 +304,7 @@
 
   }
 
-  class scheduler{
+  class Scheduler{
     
     constructor(cus_opt){
       this.events= [];
@@ -352,7 +361,7 @@
 
   return {
     init: function(options){
-      return new scheduler(options)
+      return new Scheduler(options)
     }
   }
 
