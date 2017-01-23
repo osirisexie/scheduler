@@ -3,26 +3,37 @@
 <head>
   <title>My Angular App</title>
   <link rel="stylesheet" href="scheduler.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
 <body>
   <div ng-controller="schedulerController" class="wrapper">
-    <div class="scheduler-wrapper">
-      <div class="scheduler-scroll-pen">
-        <div class="scheduler-scales-horizontal">
-          <div ng-repeat="day in days" class="scheduler-scale-horizontal"></div>
-        </div>
-        <div class="scheduler-scales-vertical">
-          <div ng-repeat="hour in hours" class="scheduler-scale-vertical"></div>
-        </div>
-        <div class="scheduler-controls">
+    <!--<div class="scheduler-wrapper">-->
+      <!--<div class="scheduler-scroll-pen">-->
+        <!--<div class="scheduler-scales-horizontal">-->
+          <!--<div ng-repeat="day in days" class="scheduler-scale-horizontal"></div>-->
+        <!--</div>-->
+        <!--<div class="scheduler-scales-vertical">-->
+          <!--<div ng-repeat="hour in hours" class="scheduler-scale-vertical"></div>-->
+        <!--</div>-->
+        <!--<div class="scheduler-controls">-->
 
-        </div>
+        <!--</div>-->
+      <!--</div>-->
+
+    <!--</div>-->
+    <div id="xqm_scheduler"></div>
+
+    <div>
+      <p><button ng-click="get()"></button></p>
+
+      <div id="xqm_scheduler2"></div>
+
+      <div>
+        <p><button ng-click="get2()"></button></p>
+
       </div>
-
-    </div>
   </div>
 
-  <div id="xqm_scheduler"></div>
 </body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
