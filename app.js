@@ -1,10 +1,14 @@
 /**
  * Created by qianmoxie on 1/19/17.
  */
+
 var app = angular.module('myApp', []);
 
 app.controller('schedulerController',schedulerController);
 function schedulerController ($scope){
+
+    let scheduler = xqmScheduler.init();
+
     $scope.days = [1,2,3,4,5,6,7];
     $scope.hours = [1,2,3,4,5,6,7,8,9,10,11,12,13,14];
     let num_days = 7,
@@ -147,4 +151,6 @@ function schedulerController ($scope){
             control.unbind('mouseup');
         }
     }
+
+
 };
