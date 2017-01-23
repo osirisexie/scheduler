@@ -7,6 +7,14 @@ app.controller('schedulerController',schedulerController);
 function schedulerController ($scope){
     $scope.days = [1,2,3,4,5,6,7];
     $scope.hours = [1,2,3,4,5,6,7,8,9,10,11,12,13,14];
+    $scope.events = [{
+        id:'001',
+        index: [3,4,13]
+    },{
+        id:'002',
+        index: [5,12,16]
+    }];
+
     let num_days = 7,
         padding = 6,
         num_hours = 28,
