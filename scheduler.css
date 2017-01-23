@@ -66,3 +66,20 @@
     left: 0;
     cursor: ns-resize;
 }
+
+
+
+.xqmScheduler-mouse{
+    position: absolute;
+    top:0;
+    bottom:0;
+    left:0;
+    right:0;
+    z-index: 10;
+}
+.xqmScheduler-event{
+    position: absolute;
+    background: lightgreen;
+    opacity: 0.3;
+
+}
