@@ -30,12 +30,16 @@
     }
     return  {
         x: Math.floor(cords.x / this.config.m_w ),
-        y: Math.floor(cords.y / this.config.m_h ),
+        y: Math.floor(cords.y / this.config.m_h),
     }
   }
 
-  function get_rect(x1,y1,x2,y2){
-    return [x1,Math.min(y1,y2),1,Math.max(Math.abs(y1-y2),1)];
+  // function get_rect(x1,y1,x2,y2){
+  //   return [x1,Math.min(y1,y2),1,Math.max(Math.abs(y1-y2),1)];
+  // }
+
+  function get_rect_for_resize(block1,block2){
+    return [block1.x,Math.min(block1.y, block2.y), 1, Math.max(Math.abs(block2.y-block1.y) + 1,1)]
   }
 
   function calc_event_rect(e, old_cords){
@@ -46,7 +50,7 @@
       }
     }
     let new_cords = get_cords.call(this,e);
-    return get_rect(old_cords.x,old_cords.y,new_cords.x,new_cords.y);
+    return get_rect_for_resize(old_cords,new_cords);
   }
 
   function to_time_string (num){
@@ -190,6 +194,7 @@
       mouse_event:function(e){
           return get_cords.call(this,e);
       },
+
       stop_further:function(e){
           e.preventDefault();
           e.stopPropagation();
@@ -237,21 +242,19 @@
               this.stop_further(e)
               this.resize = true;
               let rect = calc_event_rect.call(event,e,o_cords);
-              let data = event.data();
-              data.cords = rect;
-              event.data(data);
-              event.re_render(...rect,true);
+              event.change_text(...rect);
+              event.re_render(...rect);
           }
       },
 
       mouse_move_resize_stop: function(e){
           if(this.resize){
-              // let e = arguments[0], event = arguments[1], o_cords;
-              // if(arguments.length >= 4) o_cords = arguments[3];
-              // let rect = calc_event_rect.call(event,e,o_cords);
-              // let data = event.data();
-              // data.cords = rect;
-              // event.data(data);
+              let e = arguments[0], event = arguments[1], o_cords;
+              if(arguments.length >= 4) o_cords = arguments[3];
+              let rect = calc_event_rect.call(event,e,o_cords);
+              let data = event.data();
+              data.cords = rect;
+              event.data(data);
           }
           this.resize = false;
 
@@ -265,7 +268,7 @@
                   y:event.data().cords[1]
               };
               if(position == 'top'){
-                  cords.y = event.data().cords[1]+event.data().cords[3]
+                  cords.y = event.data().cords[1]+event.data().cords[3]-1;
               }
               event_listener_handler.startListen.call(event,'resize',cords);
           }
@@ -278,11 +281,12 @@
   Object.assign(scheduler_mouse_event_handler,{
       mouse_down:function(scheduler){
           return e=>{
+              let cords = this.mouse_event.call(scheduler,e);
               let event = scheduler.create_event({
                   type:'cords',
-                  cords: this.mouse_event.call(scheduler,e),
+                  cords: cords,
               });
-              event_listener_handler.startListen.call(event,'resize')
+              event_listener_handler.startListen.call(event,'resize',cords)
           }
 
       }
