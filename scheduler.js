@@ -56,6 +56,14 @@
     return `${h}:${m}`;
   }
 
+  function time_to_cords(obj){
+    function helper(time){
+      let nums = time.split(":").map(x=>{return parseInt(x)});
+      return (nums[0]*60+nums[1])/30
+    }
+    return [obj.week, helper(obj.start),1,helper(obj.end) - helper(obj.start)];
+  }
+
   function remove_event_helper(list,event){
     let index = list.indexOf(event);
     list.splice(index,1);
@@ -295,19 +303,24 @@
   class Event{
     
     constructor(options){
+      let data;
       if(options.type == 'cords'){
-        this.config={
-          m_w:options.m_w,
-          m_h:options.m_h,
-        };
-        let data = {
+        data = {
           cords:[options.cords.x, options.cords.y, 1, options.cords.h?options.cords.h:2],
         };
-        event_builder.build.call(this);
-        this.data(data);
-        this.re_render(...data.cords,true);
-        this.el.on('mousedown', event_mouse_event_handler.start_move(this));
+      }else if(options.type == 'time'){
+        data = {
+          cords:time_to_cords(options.time)
+        }
       }
+      this.config={
+        m_w:options.m_w,
+        m_h:options.m_h
+      };
+      event_builder.build.call(this);
+      this.data(data);
+      this.re_render(...data.cords,true);
+      this.el.on('mousedown', event_mouse_event_handler.start_move(this));
     }
 
     setid(id){
@@ -415,6 +428,18 @@
       })
       return this.events;
     }
+
+    get_data_only(){
+      return this.events.map(event=>{
+        event.parse_data();
+        return {
+          week:event.week,
+          start:event.start,
+          end:event.end
+        }
+      })
+    }
+
   }
 
   return {
