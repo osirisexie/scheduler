@@ -61,16 +61,12 @@
     flex: 1;
     border-top:1px solid cornflowerblue;
 }
-.xqmScheduler-hori:first-child{
-    border-top:none;
-}
+
 .xqmScheduler-vert{
     flex: 1;
     border-left:1px solid cornflowerblue;
 }
-.xqmScheduler-vert:first-child{
-    border-left:none;
-}
+
 .xqmScheduler-resizer-bottom, .xqmScheduler-resizer-top{
     position: absolute;
     max-height: 10px;
@@ -109,5 +105,26 @@
 }
 .xqmScheduler-text{
     padding: 3px;
+    font-size: 0.7rem;
+}
+.xqmScheduler-weeks{
+    position: absolute;
+    display: flex;
+}
+.xqmScheduler-week{
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.5;
+    font-size: 0.8rem;
+}
+.xqmScheduler-hour{
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 8px;
+    opacity: 0.5;
     font-size: 0.7rem;
 }

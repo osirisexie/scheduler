@@ -5,9 +5,17 @@
     id:'xqm_scheduler',
     w_width: 500,
     w_height: 600,
-    i_height: 1000,
   };
-  let total_wrapper_id = 'xqmScheduler-wrapper', mouse_wrapper_id = 'xqmScheduler-content';
+  let total_wrapper_id = 'xqmScheduler-wrapper', mouse_wrapper_id = 'xqmScheduler-content',
+    weeks = ['Sun','Mon', 'Tues', 'Wen','Thus','Fri','Sat'], hours = [];
+    for(let i = 0;i<25;i++){
+      hours.push(i<10?`0${i}:00`:`${i}:00`);
+    }
+
+  let label = {
+    w:30,
+    h:60
+  };
 
   function get_cords(e){
     let c_el;
@@ -94,6 +102,9 @@
         scheduler_builder.build_main.call(this,options);
         scheduler_builder.build_content.call(this,options);
         scheduler_builder.build_scales.call(this,options);
+        scheduler_builder.build_weeks.call(this);
+        scheduler_builder.build_hours.call(this);
+
 
     },
 
@@ -111,13 +122,46 @@
     build_content:function(options){
         let content = $('<div class="xqmScheduler-content" />');
         content.css({
-            left:'0',
             right:'0',
-            top:'0',
-            height:`${options.i_height}px`,
+            top:`${label.w}px`,
+            width:`${options.w_width-label.h}px`,
+            height:`${options.i_height-label.w}px`,
         }).appendTo(this.el);
 
         this.content = content;
+    },
+
+    build_weeks:function(){
+      let el = $('<div class="xqmScheduler-weeks"></div>').css({
+        left:`${label.h}px`,
+        right:'0',
+        top:'0',
+        height:`${label.w}px`
+      }).appendTo(this.el);
+      weeks.forEach(week=>{
+        let wel = $(`<div class="xqmScheduler-week">${week}</div>`).appendTo(el);
+      })
+    },
+
+    build_hours:function(){
+      let unit_h = this.el.find('.xqmScheduler-hori').height() + 1;
+      let current_h = label.w;
+      for(let i = 0; i < 24; i++){
+        let el = $(`<div class="xqmScheduler-hour">${hours[i]}</div>`).css({
+          left:0,
+          width:`${label.h}px`,
+          height:'20px',
+          top:`${current_h-10}px`
+        }).appendTo(this.el);
+        current_h += unit_h;
+      }
+      let el = $(`<div class="xqmScheduler-hour">${hours[24]}</div>`).css({
+        left:0,
+        width:`${label.h}px`,
+        height:'20px',
+        top:`${current_h-20}px`
+      }).appendTo(this.el);
+
     },
 
     build_scales:function(options){
@@ -261,7 +305,7 @@
         };
         event_builder.build.call(this);
         this.data(data);
-        this.re_render(...data.cords);
+        this.re_render(...data.cords,true);
         this.el.on('mousedown', event_mouse_event_handler.start_move(this));
       }
     }
@@ -323,6 +367,7 @@
       this.events= [];
       this.eventid = 0;
       options = Object.assign(options,cus_opt);
+      options.i_height = options.w_height*1.8;
       scheduler_builder.build.call(this,options);
       this.content.on('mousedown',scheduler_mouse_event_handler.mouse_down(this));
       this.config = Object.assign(options,{

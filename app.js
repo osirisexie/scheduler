@@ -20,7 +20,9 @@ function schedulerController ($scope,$timeout){
     })
 
     $scope.get=function(){
-        console.log(scheduler.get_events())
+        scheduler.get_events().map(event=>{
+            console.log([event.start, event.end]);
+        })
     }
     $scope.get2=function(){
         console.log(scheduler2.get_events())
