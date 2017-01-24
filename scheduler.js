@@ -261,7 +261,7 @@
         };
         event_builder.build.call(this);
         this.data(data);
-        this.re_render(...data.cords);
+        this.re_render(...data.cords,true);
         this.el.on('mousedown', event_mouse_event_handler.start_move(this));
       }
     }
