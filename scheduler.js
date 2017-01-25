@@ -34,10 +34,6 @@
     }
   }
 
-  // function get_rect(x1,y1,x2,y2){
-  //   return [x1,Math.min(y1,y2),1,Math.max(Math.abs(y1-y2),1)];
-  // }
-
   function get_rect_for_resize(block1,block2){
     return [block1.x,Math.min(block1.y, block2.y), 1, Math.max(Math.abs(block2.y-block1.y) + 1,1)]
   }
@@ -71,8 +67,178 @@
   function remove_event_helper(list,event){
     let index = list.indexOf(event);
     list.splice(index,1);
+  }
+
+  class Group {
+    constructor(data,key){
+      this.data = [];
+      data.map(data=>{
+        this.insert(data[key],data);
+      })
+    }
+
+    insert(key,val){
+      let current = this.get(key);
+      if(current){
+        current.data.push(val);
+      }else{
+        this.data.push({
+          key:key,
+          data:[val]
+        })
+      }
+    }
+
+    get(key){
+      for (let i = 0;i<this.data.length;i++){
+        if (this.data[i].key == key){
+          return this.data[i]
+        }
+      }
+      return null;
+    }
+
+    print(){
+      return this.data;
+    }
 
   }
+
+  let time_string_helper = {
+    isBefore:function(a,b){
+      a = this.toMinutes(a);
+      b = this.toMinutes(b);
+      return a < b;
+    },
+    isAfter:function(a,b){
+      a = this.toMinutes(a);
+      b = this.toMinutes(b);
+      return a > b;
+    },
+    toMinutes: function (a) {
+      a = a.split(':').map(a=>{return parseInt(a)});
+      return a[0]*60 + a[1];
+    }
+  }
+
+  function _event_combine(data){
+    let re = [];
+    if(data.length > 0){
+      data.sort((a,b)=>{
+        return a.start > b.start
+      });
+      re = data.reduce((pre, data)=>{
+        let last = pre[pre.length -1];
+        if(!time_string_helper.isAfter(data.start,last.end)){
+          last.end = time_string_helper.isAfter(data.end,last.end)?data.end:last.end;
+        }else{
+          pre.push({
+            week:data.week,
+            start:data.start,
+            end:data.end
+          })
+        }
+        return pre;
+      },[data[0]])
+    }
+    return re;
+
+  }
+
+  class EventGroup extends Group{
+
+    combine(){
+      this.data.map(data=>{
+        data.data = _event_combine(data.data);
+      })
+    }
+
+    print(){
+      this.combine();
+      return super.print()
+    }
+  }
+  
+  let events_timezone_helper = {
+
+    new_range: function(s,e,w){
+    w = w == -1?6:(w==7?0:w);
+    return {
+      week:w,
+      start: s[0]+':' + s[1],
+      end:e[0] + ':' + e[1]
+    }
+  },
+
+    event_to_local:function(event,offset){
+      let ranges = [];
+      let s = event.start.split(':').map(a=>{return parseInt(a)});
+      s[0] -= offset;
+      let s_m = s[0]*60 + s[1];
+      let e = event.end.split(':').map(a=>{return parseInt(a)});
+      e[0] -= offset;
+      let e_m = e[0] * 60 + e[1];
+      if(s_m >= 0){
+        ranges.push(events_timezone_helper.new_range(s,e,event.week))
+      }else if(e_m <= 0 ){
+        s[0] += 24;
+        e[0] += 24;
+        ranges.push(events_timezone_helper.new_range(s,e,event.week-1))
+      }else{
+        s[0] += 24;
+        ranges.push(events_timezone_helper.new_range(s,[24,0],event.week -1))
+        ranges.push(events_timezone_helper.new_range([0,0],e,event.week))
+      }
+      return ranges;
+
+    },
+
+    get_local_events:function(events){
+      let offset = events_timezone_helper.get_current_offset();
+      let res= events.reduce((ranges,event)=>{
+        return ranges.concat(events_timezone_helper.event_to_local(event,offset));
+      },[])
+      return res;
+    },
+
+    get_current_offset:function(){
+      return new Date().getTimezoneOffset() / 60;
+    },
+
+    //called in event object
+    event_to_utc:function(offset){
+      let ranges = [];
+      let s = this.start.split(':').map(a=>{return parseInt(a)});
+      s[0] += offset;
+      let s_m = s[0] * 60 + s[1];
+      let e = this.end.split(':').map(a=>{return parseInt(a)});
+      e[0] += offset;
+      let e_m = e[0] * 60 + e[1];
+      if(e_m <= 24 * 60){
+        ranges.push(events_timezone_helper.new_range(s,e,this.week))
+      }else if(s_m >= 24*60){
+        s[0] -= 24;
+        e[0] -= 24;
+        ranges.push(events_timezone_helper.new_range(s,e,this.week+1))
+      }else{
+        e[0] -= 24;
+        ranges.push(events_timezone_helper.new_range(s,[24,0],this.week));
+        ranges.push(events_timezone_helper.new_range([0,0],e,this.week+1));
+      }
+      return ranges;
+    }
+
+  };
+
+  let events_helper = Object.assign(events_timezone_helper,{
+    combine_events:function(events){
+      let group = new EventGroup(events,'week');
+      events = group.print();
+      return events;
+
+    }
+
+  });
 
   let event_builder ={
 
@@ -375,6 +541,10 @@
       this.end = to_time_string(this.end);
     }
 
+    get_range(offset){
+      this.parse_data();
+      return events_helper.event_to_utc.call(this,offset);
+    }
 
   }
 
@@ -395,16 +565,30 @@
     }
 
     create_event(options){
-      options = Object.assign({
+      if(options.type == 'events'){
+        let events = options.events;
+        events = events_helper.get_local_events(events);
+        events = events_helper.combine_events(events);
+        events.forEach(group=>{
+          group.data.forEach(time=>{
+            this.create_event({
+              type:'time',
+              time:time
+            })
+          })
+        })
+      }else{
+        options = Object.assign({
           m_w:this.config.m_w,
           m_h:this.config.m_h,
-      },options)
-      let event = new Event(options);
-      event.setid(this.eventid++);
-      event.parent = this;
-      event.el.appendTo(this.content)
-      this.events.push(event);
-      return event;
+        },options)
+        let event = new Event(options);
+        event.setid(this.eventid++);
+        event.parent = this;
+        event.el.appendTo(this.content)
+        this.events.push(event);
+        return event;
+      }
     }
 
     remove_event(event){
@@ -434,14 +618,14 @@
     }
 
     get_data_only(){
-      return this.events.map(event=>{
-        event.parse_data();
-        return {
-          week:event.week,
-          start:event.start,
-          end:event.end
-        }
-      })
+      let currentTimeZoneOffsetInHours = events_helper.get_current_offset();
+      let utcRanges = this.events.reduce((ranges,event)=>{
+        return ranges.concat(event.get_range(currentTimeZoneOffsetInHours));
+      },[])
+      utcRanges = new EventGroup(utcRanges,'week').print();
+      return utcRanges.reduce((pre,data)=>{
+        return pre.concat(data.data);
+      },[]);
     }
 
     scroll_to_first(){
