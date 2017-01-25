@@ -1,7 +1,7 @@
 (function(factory){
   window.xqmScheduler = factory();
 })(function(){
-  var options = {
+  let options = {
     id:'xqm_scheduler',
     w_width: 500,
     w_height: 600,
@@ -429,7 +429,7 @@
     get_events(){
       this.events.forEach(event=>{
         event.parse_data();
-      })
+      });
       return this.events;
     }
 
@@ -444,6 +444,19 @@
       })
     }
 
+    scroll_to_first(){
+      let pos = 0;
+      if(this.events.length > 0){
+        let first =  this.events.reduce((min,event)=>{
+          return Math.min(min,event.data().cords[1])
+        },this.events[0].data().cords[1])
+        pos = first*this.config.m_h + label.w - this.config.w_height * 0.2;
+      }
+
+      this.el.scrollTop(pos);
+    }
+
+
   }
 
   return {
@@ -452,6 +465,6 @@
     }
   }
 
-})
+});
 
 
